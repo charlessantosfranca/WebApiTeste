@@ -1,21 +1,6 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-WORKDIR /app
-EXPOSE 8080
-
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
-COPY ["WebApiTeste.csproj", "."]
-RUN dotnet restore "./WebApiTeste.csproj"
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 COPY . .
-WORKDIR "/src/."
-RUN dotnet build "./WebApiTeste.csproj" -c $BUILD_CONFIGURATION -o /app/build
-
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./WebApiTeste.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
-
-FROM base AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "WebApiTeste.dll"]
+EXPOSE 8080
+ENV ASPNETCORE_ENVIRONMENT=Development
+ENV DOTNET_RUNNING_IN_CONTAINER=true
+ENTRYPOINT ["dotnet","/WebApiTeste.dll", "--server.urls","<http://+:90>"]
